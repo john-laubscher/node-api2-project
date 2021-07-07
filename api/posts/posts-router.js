@@ -80,23 +80,43 @@ router.put("/:id", (req, res) => {
   }
 });
 
-router.delete("/:id", (req, res) => {
-  Posts.remove(req.params.id)
-    .then((count) => {
-      console.log("THIS IS THE REQ", req);
-      if (count > 0) {
-        res.status(200).json({ message: "The post has been deleted" });
-      } else {
-        res.status(404).json({ message: "The post with the specified ID does not exist" });
-      }
-    })
-    .catch((error) => {
-      console.log(error);
-      res.status(500).json({
-        message: "The post could not be removed",
+router.delete("/:id", async (req, res) => {
+  try {
+    const post = await Posts.findById(req.params.id);
+    if (!post) {
+      res.status(404).json({
+        message: "The post with the specified ID does not exist",
       });
+    } else {
+      await Posts.remove(req.params.id);
+      res.json(post);
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: "the post could not be removed",
+      err: err.message,
+      stack: err.stack,
     });
+  }
 });
+
+////////not working completely, the 13th test isn't passing//////
+//   Posts.remove(req.params.id)
+//     .then((count) => {
+//       console.log("THIS IS THE REQ", req);
+//       if (count > 0) {
+//         res.status(200).json({ message: "The post has been deleted" });
+//       } else {
+//         res.status(404).json({ message: "The post with the specified ID does not exist" });
+//       }
+//     })
+//     .catch((error) => {
+//       console.log(error);
+//       res.status(500).json({
+//         message: "The post could not be removed",
+//       });
+//     });
+// });
 
 router.get("/:id/comments", (req, res) => {
   if (!req.params.id) {
